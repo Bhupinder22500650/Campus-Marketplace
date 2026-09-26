@@ -19,6 +19,7 @@ namespace Assignment3_Group.Models
         public string email { get; set; }
 
         //Making it so you don't have to have the phone number in the database
-        public int? PhoneNumber { get; set; }
+        [Phone]
+        public string? PhoneNumber { get; set; }
     }
 }
