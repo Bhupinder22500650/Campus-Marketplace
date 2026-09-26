@@ -23,5 +23,6 @@ namespace Assignment3_Group.Models
 
         [Required]
         public bool ListingStatus { get; set; }
+
     }
 }
