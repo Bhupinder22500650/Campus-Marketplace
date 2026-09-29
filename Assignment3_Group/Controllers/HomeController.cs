@@ -7,7 +7,8 @@ namespace Assignment3_Group.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly StudentMarketplaceDB _db; 
+        private readonly StudentMarketplaceDB _db;
+
         public HomeController(StudentMarketplaceDB db)
         {
             _db = db;
@@ -63,8 +64,6 @@ namespace Assignment3_Group.Controllers
         [HttpPost]
         public IActionResult Login(User obj)
         {
-            if (!ModelState.IsValid)
-            {
                 //Turning the database into a list so i can check the data inside
                 var usersDb = _db.Users.ToList();
 
@@ -81,7 +80,6 @@ namespace Assignment3_Group.Controllers
                         ViewBag.LoginError = "Incorrect username or password.";
                     }
                 }
-            }
             return View(obj);
         }
 

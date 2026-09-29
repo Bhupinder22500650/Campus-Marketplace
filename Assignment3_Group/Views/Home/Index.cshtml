@@ -6,6 +6,13 @@
 
 <div class="text-center">
     <h1 class="display-4">Welcome To the Student Marketplace!</h1>
-    <button id="btn_Login">Login</button>
-    <button id="btn_SignUp">Sign up</button>
+    <button id="btn_Login">
+        <a asp-area="" asp-controller="Home" asp-action="Login">Login</a>
+    </button>
+
+    <button id="btn_SignUp">
+        <a asp-area="" asp-controller="Home" asp-action="SignUp">Sign Up</a> 
+    </button>
+    
+    
 </div>

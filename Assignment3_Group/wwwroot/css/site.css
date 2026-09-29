@@ -20,3 +20,8 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+button a {
+    text-decoration: none; 
+    color: inherit; 
+}
