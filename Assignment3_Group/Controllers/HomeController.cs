@@ -1,7 +1,9 @@
-using System.Diagnostics;
 using Assignment3_Group.Data;
 using Assignment3_Group.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using System.Diagnostics;
+using System.Text.Json;
 
 namespace Assignment3_Group.Controllers
 {
@@ -44,6 +46,11 @@ namespace Assignment3_Group.Controllers
                 _db.Users.Add(obj);
                 _db.SaveChanges();
                 //Will change so it sends to the actual page where you can look at whats listed
+                User currentUser = new User(obj.UserId, obj.UserName, obj.Password, obj.email, obj.PhoneNumber);
+
+                //Saving currentUser details into the http session
+                HttpContext.Session.SetString("CurrentUser", JsonSerializer.Serialize(currentUser));
+
                 return RedirectToAction("Index");
             }
             return View(obj);
@@ -59,8 +66,6 @@ namespace Assignment3_Group.Controllers
         [HttpPost]
         public IActionResult Login(User obj)
         {
-            if (!ModelState.IsValid)
-            {
                 //Turning the database into a list so i can check the data inside
                 var usersDb = _db.Users.ToList();
 
@@ -69,16 +74,18 @@ namespace Assignment3_Group.Controllers
                     //Making sure both the username and password are correct
                     if (usersDb[i].UserName == obj.UserName && usersDb[i].Password == obj.Password)
                     {
-                        //Need to try save data somewhere so the user is actually logged in and can do everything we want them to be able to do
-                        return RedirectToAction("Index");
-                    }
-                    else
-                    {
-                        //Find a way to tell the user they logged in wrong
-                        ViewBag.LoginError = "Incorrect username or password.";
+                        User currentUser = new User(usersDb[i].UserId, usersDb[i].UserName, usersDb[i].Password, usersDb[i].email, usersDb[i].PhoneNumber);
+                        
+                        //Saving currentUser details into the http session
+                        HttpContext.Session.SetString("CurrentUser", JsonSerializer.Serialize(currentUser));
+
+                    //Need to try save data somewhere so the user is actually logged in and can do everything we want them to be able to do
+                    return RedirectToAction("Index");
                     }
                 }
-            }
+                //Find a way to tell the user they logged in wrong
+                ViewBag.LoginError = "Incorrect username or password.";
+
             return View(obj);
         }
 
