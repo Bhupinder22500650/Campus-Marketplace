@@ -29,11 +29,6 @@ namespace Assignment3_Group.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
         //Sign up (create method)
         public IActionResult SignUp()
         {
