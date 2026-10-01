@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Drawing;
 
 namespace Assignment3_Group.Models
 {
@@ -23,6 +24,8 @@ namespace Assignment3_Group.Models
 
         [Required]
         public bool ListingStatus { get; set; }
-
+        
+        //Making a place to store image data (in byte form) so we can make the image whenever we need it
+        public Byte? ProductImage { get; set; }
     }
 }

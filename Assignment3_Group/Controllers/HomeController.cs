@@ -89,6 +89,13 @@ namespace Assignment3_Group.Controllers
             return View(obj);
         }
 
+        //Market place (create method)
+        [HttpGet]
+        public IActionResult MarketPlace()
+        {
+            return View();
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
