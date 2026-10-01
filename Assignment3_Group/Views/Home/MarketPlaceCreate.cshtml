@@ -1,0 +1,53 @@
+﻿@model Assignment3_Group.Models.Listings
+
+@{
+    ViewData["Title"] = "MarketPlaceCreate";
+}
+
+<h1>MarketPlaceCreate</h1>
+
+<h4>Listings</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="MarketPlaceCreate">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="SellerId" class="control-label"></label>
+                <input asp-for="SellerId" class="form-control" />
+                <span asp-validation-for="SellerId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ListingCategory" class="control-label"></label>
+                <input asp-for="ListingCategory" class="form-control" />
+                <span asp-validation-for="ListingCategory" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ListingPrice" class="control-label"></label>
+                <input asp-for="ListingPrice" class="form-control" />
+                <span asp-validation-for="ListingPrice" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="ListingStatus" /> @Html.DisplayNameFor(model => model.ListingStatus)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="ProductImage" class="control-label"></label>
+                <input type="file" name="imageFile" accept="image/*" asp-for="ProductImage" class="form-control" />
+                <span asp-validation-for="ProductImage" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

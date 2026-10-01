@@ -96,6 +96,26 @@ namespace Assignment3_Group.Controllers
             return View();
         }
 
+        [HttpGet]
+        public IActionResult MarketPlaceCreate()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult MarketPlaceCreate(Listings obj)
+        {
+            if (ModelState.IsValid)
+            {
+                _db.Listings.Add(obj);
+                _db.SaveChanges();
+
+                return RedirectToAction("MarketPlace");
+            }
+            return View(obj);
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
