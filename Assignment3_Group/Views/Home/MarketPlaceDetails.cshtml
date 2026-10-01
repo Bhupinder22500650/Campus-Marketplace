@@ -1,0 +1,54 @@
+﻿@model Assignment3_Group.Models.Listings
+
+@{
+    ViewData["Title"] = "Item details";
+}
+
+<h1>@Model.ListingTitle</h1>
+<div class="row g-4">
+    <div class="col-md-6">
+        @if (string.IsNullOrWhiteSpace(Model.ImageFileName))
+        {
+            <div class="bg-light p-5 text-center">No image</div>
+        }
+        else
+        {
+            <img src="@Url.Content("~/images/" + Model.ImageFileName)" alt="@Model.ListingTitle"
+                 class="img-fluid" style="max-height: 400px;" />
+        }
+    </div>
+    <div class="col-md-6">
+        <p class="fs-4 fw-bold">NZ$@Model.ListingPrice.ToString("0.00")</p>
+        @if (Model.Category != null)
+        {
+            <p>Category: @Model.Category.CategoryName</p>
+        }
+        <p>Condition: @Model.ListingCondition</p>
+        @if (Model.ListingStatus)
+        {
+            <p class="text-success">Available</p>
+        }
+        else
+        {
+            <p class="text-secondary">Sold</p>
+        }
+        <h2 class="h5">Description</h2>
+        <p style="white-space: pre-wrap;">@Model.ListingDescription</p>
+        <h2 class="h5">Seller contact details</h2>
+        @if (Model.Seller != null)
+        {
+            <p>Student username / ID: @Model.Seller.UserName</p>
+            <p>Student email: @Model.Seller.email</p>
+            @if (!string.IsNullOrWhiteSpace(Model.Seller.PhoneNumber))
+            {
+                <p>Mobile number: @Model.Seller.PhoneNumber</p>
+            }
+            else
+            {
+                <p>Mobile number: Not provided</p>
+            }
+        }
+        <p>Contact the seller to arrange payment and collection.</p>
+    </div>
+</div>
+<p class="mt-4"><a asp-controller="Home" asp-action="MarketPlace" class="btn btn-outline-secondary">Back to feed</a></p>

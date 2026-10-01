@@ -1,53 +1,63 @@
 ﻿@model Assignment3_Group.Models.Listings
 
 @{
-    ViewData["Title"] = "MarketPlaceCreate";
+    ViewData["Title"] = "Sell an item";
 }
 
-<h1>MarketPlaceCreate</h1>
-
-<h4>Listings</h4>
-<hr />
+<h1>Sell an item</h1>
+<p>Your account supplies the seller ID and contact details.</p>
 <div class="row">
-    <div class="col-md-4">
-        <form asp-action="MarketPlaceCreate">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="SellerId" class="control-label"></label>
-                <input asp-for="SellerId" class="form-control" />
-                <span asp-validation-for="SellerId" class="text-danger"></span>
+    <div class="col-md-7">
+        <form asp-controller="Home" asp-action="MarketPlaceCreate" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="mb-3">
+                <label asp-for="ListingTitle" class="form-label"></label>
+                <input asp-for="ListingTitle" class="form-control" maxlength="100" />
+                <span asp-validation-for="ListingTitle" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="ListingCategory" class="control-label"></label>
-                <input asp-for="ListingCategory" class="form-control" />
+            <div class="mb-3">
+                <label asp-for="ListingDescription" class="form-label"></label>
+                <textarea asp-for="ListingDescription" class="form-control" rows="4" maxlength="1000"></textarea>
+                <span asp-validation-for="ListingDescription" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="ListingCategory" class="form-label"></label>
+                <select asp-for="ListingCategory" asp-items="ViewBag.Categories" class="form-select">
+                    <option value="">Select a category</option>
+                </select>
                 <span asp-validation-for="ListingCategory" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="ListingPrice" class="control-label"></label>
-                <input asp-for="ListingPrice" class="form-control" />
+            <div class="mb-3">
+                <label asp-for="ListingPrice" class="form-label"></label>
+                <input asp-for="ListingPrice" type="number" min="0.01" max="99999999.99" step="0.01" class="form-control" />
                 <span asp-validation-for="ListingPrice" class="text-danger"></span>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="ListingStatus" /> @Html.DisplayNameFor(model => model.ListingStatus)
-                </label>
+            <div class="mb-3">
+                <label asp-for="ListingCondition" class="form-label"></label>
+                <select asp-for="ListingCondition" class="form-select">
+                    <option value="Used">Used</option>
+                    <option value="New">New</option>
+                </select>
+                <span asp-validation-for="ListingCondition" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="ProductImage" class="control-label"></label>
-                <input type="file" name="imageFile" accept="image/*" asp-for="ProductImage" class="form-control" />
-                <span asp-validation-for="ProductImage" class="text-danger"></span>
+            <div class="mb-3 form-check">
+                <input asp-for="ListingStatus" class="form-check-input" />
+                <label asp-for="ListingStatus" class="form-check-label"></label>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+            <div class="mb-3">
+                <label asp-for="ImageFileName" class="form-label"></label>
+                <input asp-for="ImageFileName" class="form-control" placeholder="textbook.jpg" />
+                <div class="form-text">Leave blank for now, or use a file already copied into wwwroot/images.</div>
+                <span asp-validation-for="ImageFileName" class="text-danger"></span>
             </div>
+            <button type="submit" class="btn btn-primary">Create listing</button>
+            <a asp-controller="Home" asp-action="MarketPlace" class="btn btn-outline-secondary">Cancel</a>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

@@ -1,64 +1,92 @@
 ﻿@model IEnumerable<Assignment3_Group.Models.Listings>
 
 @{
-    ViewData["Title"] = "MarketPlace";
+    ViewData["Title"] = "Marketplace";
 }
 
-<h1>MarketPlace</h1>
+<h1>Marketplace</h1>
+<p>Browse items listed by students. All prices are in New Zealand dollars.</p>
+<p><a asp-controller="Home" asp-action="MarketPlaceCreate" class="btn btn-primary">Sell an item</a></p>
 
-<p>
-    <a asp-controller="Home" asp-action="MarketPlaceCreate">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.SellerId)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ListingCategory)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ListingPrice)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ListingStatus)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ProductImage)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model == null)
+<!-- GET sends the selected filters to the MarketPlace controller method. -->
+<form asp-controller="Home" asp-action="MarketPlace" method="get" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <label for="search" class="form-label">Search</label>
+        <input id="search" name="search" value="@ViewBag.Search" class="form-control"
+               placeholder="Search title or description" />
+    </div>
+    <div class="col-md-2">
+        <label for="categoryId" class="form-label">Category</label>
+        <select id="categoryId" name="categoryId" asp-items="ViewBag.Categories" class="form-select">
+            <option value="">All categories</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label for="status" class="form-label">Availability</label>
+        <select id="status" name="status" class="form-select">
+            <option value="all" selected="@(ViewBag.Status == "all")">All items</option>
+            <option value="available" selected="@(ViewBag.Status == "available")">Available</option>
+            <option value="sold" selected="@(ViewBag.Status == "sold")">Sold</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label for="sort" class="form-label">Sort by</label>
+        <select id="sort" name="sort" class="form-select">
+            <option value="newest" selected="@(ViewBag.Sort == "newest")">Newest first</option>
+            <option value="priceLow" selected="@(ViewBag.Sort == "priceLow")">Price: low to high</option>
+            <option value="priceHigh" selected="@(ViewBag.Sort == "priceHigh")">Price: high to low</option>
+        </select>
+    </div>
+    <div class="col-md-2 d-flex align-items-end gap-2">
+        <button type="submit" class="btn btn-primary">Apply</button>
+        <a asp-controller="Home" asp-action="MarketPlace" class="btn btn-outline-secondary">Reset</a>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <p class="alert alert-info">No items found. Try changing the filters or add a listing.</p>
+}
+else
+{
+    <div class="row g-3">
+        <!-- foreach creates one card for each listing from the database. -->
+        @foreach (var item in Model)
         {
-            
-        } else {   
-        @foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.SellerId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ListingCategory)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ListingPrice)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ListingStatus)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ProductImage)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.ListingId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.ListingId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.ListingId">Delete</a>
-            </td>
-        </tr>
-    }
+            <div class="col-sm-6 col-lg-4">
+                <div class="card h-100">
+                    @if (string.IsNullOrWhiteSpace(item.ImageFileName))
+                    {
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+                            <span class="text-muted">No image</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <img src="@Url.Content("~/images/" + item.ImageFileName)" alt="@item.ListingTitle"
+                             class="card-img-top" style="height: 180px; object-fit: contain;" />
+                    }
+                    <div class="card-body">
+                        <h2 class="h5 card-title">@item.ListingTitle</h2>
+                        <p class="fw-bold">NZ$@item.ListingPrice.ToString("0.00")</p>
+                        @if (item.Category != null)
+                        {
+                            <p class="mb-1">Category: @item.Category.CategoryName</p>
+                        }
+                        <p class="mb-1">Condition: @item.ListingCondition</p>
+                        @if (item.ListingStatus)
+                        {
+                            <p class="text-success">Available</p>
+                        }
+                        else
+                        {
+                            <p class="text-secondary">Sold</p>
+                        }
+                        <a asp-controller="Home" asp-action="MarketPlaceDetails"
+                           asp-route-id="@item.ListingId" class="btn btn-outline-primary">View details</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 }
-    </tbody>
-</table>
