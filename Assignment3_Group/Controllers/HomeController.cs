@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using System.Diagnostics;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace Assignment3_Group.Controllers
 {
@@ -91,35 +92,162 @@ namespace Assignment3_Group.Controllers
 
         //Market place (create method)
         [HttpGet]
-        public IActionResult MarketPlace()
+        public IActionResult MarketPlace(string? search, int? categoryId,
+            string sort = "newest", string status = "all")
         {
-            return View();
+            if (HttpContext.Session.GetString("CurrentUser") == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            // Include also loads the category name for each listing.
+            var listings = _db.Listings.Include(item => item.Category)
+                .AsNoTracking().AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+                listings = listings.Where(item =>
+                    item.ListingTitle.Contains(search) ||
+                    item.ListingDescription.Contains(search));
+            }
+
+            if (categoryId.HasValue)
+            {
+                listings = listings.Where(item => item.ListingCategory == categoryId.Value);
+            }
+
+            if (status == "available")
+            {
+                listings = listings.Where(item => item.ListingStatus == true);
+            }
+            else if (status == "sold")
+            {
+                listings = listings.Where(item => item.ListingStatus == false);
+            }
+            else
+            {
+                status = "all";
+            }
+
+            if (sort == "priceLow")
+            {
+                listings = listings.OrderBy(item => item.ListingPrice)
+                    .ThenByDescending(item => item.ListingId);
+            }
+            else if (sort == "priceHigh")
+            {
+                listings = listings.OrderByDescending(item => item.ListingPrice)
+                    .ThenByDescending(item => item.ListingId);
+            }
+            else
+            {
+                sort = "newest";
+                listings = listings.OrderByDescending(item => item.ListingDate)
+                    .ThenByDescending(item => item.ListingId);
+            }
+
+            // Keep the selected values visible after clicking Apply.
+            ViewBag.Search = search;
+            ViewBag.CategoryId = categoryId;
+            ViewBag.Sort = sort;
+            ViewBag.Status = status;
+            ViewBag.Categories = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
+                _db.Categories.OrderBy(category => category.CategoryName).ToList(),
+                "CategoryId", "CategoryName", categoryId);
+
+            return View(listings.ToList());
         }
 
+        // DETAILS: display one listing, including the seller's contact details.
+        [HttpGet]
+        public IActionResult MarketPlaceDetails(int id)
+        {
+            if (HttpContext.Session.GetString("CurrentUser") == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var listing = _db.Listings.Include(item => item.Category)
+                .Include(item => item.Seller).AsNoTracking()
+                .FirstOrDefault(item => item.ListingId == id);
+
+            if (listing == null)
+            {
+                return NotFound();
+            }
+
+            return View(listing);
+        }
+
+        // CREATE GET: display an empty form.
         [HttpGet]
         public IActionResult MarketPlaceCreate()
         {
-            return View();
+            if (HttpContext.Session.GetString("CurrentUser") == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            ViewBag.Categories = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
+                _db.Categories.OrderBy(category => category.CategoryName).ToList(),
+                "CategoryId", "CategoryName");
+
+            return View(new Listings());
         }
 
+        // CREATE POST: check the form, save the item and return to the feed.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult MarketPlaceCreate(Listings obj)
+        public IActionResult MarketPlaceCreate(
+            [Bind("ListingTitle,ListingDescription,ListingCategory,ListingPrice,ListingCondition,ListingStatus,ImageFileName")]
+            Listings obj)
         {
+            string? sessionData = HttpContext.Session.GetString("CurrentUser");
+            if (sessionData == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            User? currentUser = JsonSerializer.Deserialize<User>(sessionData);
+            if (currentUser == null || !_db.Users.Any(user => user.UserId == currentUser.UserId))
+            {
+                return RedirectToAction("Login");
+            }
+
+            // Never let someone type another seller's ID in the form.
+            obj.SellerId = currentUser.UserId;
+            obj.ListingDate = DateTime.Now;
+            ModelState.Remove("SellerId");
+
+            if (!_db.Categories.Any(category => category.CategoryId == obj.ListingCategory))
+            {
+                ModelState.AddModelError("ListingCategory", "Please select an existing category.");
+            }
+
             if (ModelState.IsValid)
             {
-                _db.Listings.Add(obj);
-                _db.SaveChanges();
-
-                return RedirectToAction("MarketPlace");
+                try
+                {
+                    _db.Listings.Add(obj);
+                    _db.SaveChanges();
+                    return RedirectToAction("MarketPlace");
+                }
+                catch (DbUpdateException)
+                {
+                    ModelState.AddModelError(string.Empty,
+                        "The listing could not be saved. Check the database and try again.");
+                }
             }
+
+            // Reload the dropdown when the form has an error.
+            ViewBag.Categories = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
+                _db.Categories.OrderBy(category => category.CategoryName).ToList(),
+                "CategoryId", "CategoryName", obj.ListingCategory);
+
             return View(obj);
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+
     }
 }
