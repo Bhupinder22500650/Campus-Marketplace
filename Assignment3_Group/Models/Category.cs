@@ -10,9 +10,9 @@ namespace Assignment3_Group.Models
 
         //Making required data the category name and description
         [Required]
-        public string CategoryName { get; set; }
+        public string CategoryName { get; set; } = string.Empty;
 
         [Required]
-        public string CategoryDescription { get; set; }
+        public string CategoryDescription { get; set; } = string.Empty;
     }
 }
