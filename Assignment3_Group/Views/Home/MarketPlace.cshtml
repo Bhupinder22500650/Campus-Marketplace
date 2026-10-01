@@ -1,0 +1,64 @@
+﻿@model IEnumerable<Assignment3_Group.Models.Listings>
+
+@{
+    ViewData["Title"] = "MarketPlace";
+}
+
+<h1>MarketPlace</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.SellerId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ListingCategory)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ListingPrice)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ListingStatus)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ProductImage)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model == null)
+        {
+            
+        } else {   
+        @foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.SellerId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ListingCategory)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ListingPrice)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ListingStatus)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ProductImage)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.ListingId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.ListingId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.ListingId">Delete</a>
+            </td>
+        </tr>
+    }
+}
+    </tbody>
+</table>
