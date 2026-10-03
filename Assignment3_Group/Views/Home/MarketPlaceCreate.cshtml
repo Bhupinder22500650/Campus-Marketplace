@@ -8,7 +8,7 @@
 <p>Your account supplies the seller ID and contact details.</p>
 <div class="row">
     <div class="col-md-7">
-        <form asp-controller="Home" asp-action="MarketPlaceCreate" method="post">
+        <form asp-controller="Home" asp-action="MarketPlaceCreate" method="post" enctype="multipart/form-data">
             <div asp-validation-summary="All" class="text-danger"></div>
             <div class="mb-3">
                 <label asp-for="ListingTitle" class="form-label"></label>
@@ -44,11 +44,13 @@
                 <input asp-for="ListingStatus" class="form-check-input" />
                 <label asp-for="ListingStatus" class="form-check-label"></label>
             </div>
+            <!--
+                Going off what you had done before, i wanted to improve it so you can actually add files
+            -->
             <div class="mb-3">
-                <label asp-for="ImageFileName" class="form-label"></label>
-                <input asp-for="ImageFileName" class="form-control" placeholder="textbook.jpg" />
-                <div class="form-text">Leave blank for now, or use a file already copied into wwwroot/images.</div>
-                <span asp-validation-for="ImageFileName" class="text-danger"></span>
+                <label class="form-label">Image</label>
+                <input type="file" name="imageFile" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
+                <div class="form-text">Select an image from your listings.</div>
             </div>
             <button type="submit" class="btn btn-primary">Create listing</button>
             <a asp-controller="Home" asp-action="MarketPlace" class="btn btn-outline-secondary">Cancel</a>

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Assignment3_Group.Controllers
 {
@@ -93,15 +94,15 @@ namespace Assignment3_Group.Controllers
         [HttpGet]
         public IActionResult MarketPlace(string? search, int? categoryId,
             string sort = "newest", string status = "all")
-        {
+        { 
             if (HttpContext.Session.GetString("CurrentUser") == null)
             {
                 return RedirectToAction("Login");
             }
 
-            // Include also loads the category name for each listing.
-            var listings = _db.Listings.Include(item => item.Category)
-                .AsNoTracking().AsQueryable();
+                // Include also loads the category name for each listing.
+                var listings = _db.Listings.Include(item => item.Category)
+                    .AsNoTracking().AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -200,7 +201,7 @@ namespace Assignment3_Group.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult MarketPlaceCreate(
             [Bind("ListingTitle,ListingDescription,ListingCategory,ListingPrice,ListingCondition,ListingStatus,ImageFileName")]
-            Listings obj)
+            Listings obj, IFormFile? imageFile)
         {
             string? sessionData = HttpContext.Session.GetString("CurrentUser");
             if (sessionData == null)
@@ -222,6 +223,21 @@ namespace Assignment3_Group.Controllers
             if (!_db.Categories.Any(category => category.CategoryId == obj.ListingCategory))
             {
                 ModelState.AddModelError("ListingCategory", "Please select an existing category.");
+            }
+
+            //This is so the user can upload a file and we save the name to the database, but the actual image to wwwroot/images
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                var filename = Path.GetFileName(imageFile.FileName);
+
+                var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", filename);
+
+                using (var stream = new FileStream(imagePath, FileMode.Create))
+                {
+                    imageFile.CopyTo(stream);
+                }
+
+                obj.ImageFileName = filename;
             }
 
             if (ModelState.IsValid)

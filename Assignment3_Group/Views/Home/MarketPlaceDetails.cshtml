@@ -37,7 +37,7 @@
         <h2 class="h5">Seller contact details</h2>
         @if (Model.Seller != null)
         {
-            <p>Student username / ID: @Model.Seller.UserName</p>
+            <p>Student username / ID: @Model.Seller.UserName / @Model.Seller.UserId</p>
             <p>Student email: @Model.Seller.email</p>
             @if (!string.IsNullOrWhiteSpace(Model.Seller.PhoneNumber))
             {
