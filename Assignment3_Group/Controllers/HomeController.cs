@@ -1,10 +1,13 @@
 using Assignment3_Group.Data;
 using Assignment3_Group.Models;
+using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Diagnostics;
+using System.Reflection.Metadata;
+using System.Text.Json;
 
 namespace Assignment3_Group.Controllers
 {
@@ -29,6 +32,21 @@ namespace Assignment3_Group.Controllers
 
         public IActionResult Index()
         {
+            //Making it so when user goes into the index it checks if they are loged in, if not it says login else shows their user name
+            string? sessionData = HttpContext.Session.GetString("CurrentUser");
+
+            if (sessionData == null)
+            {
+                ViewBag.UserName = null;
+            }else
+            {
+                User? currentUser = JsonSerializer.Deserialize<User>(sessionData);
+                if (currentUser != null) 
+                {
+                    ViewBag.UserName = currentUser.UserName;
+                }
+            }
+
             return View();
         }
 
