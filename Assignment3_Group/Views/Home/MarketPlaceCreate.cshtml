@@ -22,8 +22,9 @@
             </div>
             <div class="mb-3">
                 <label asp-for="ListingCategory" class="form-label"></label>
+                <!-- The category names come from the database. -->
                 <select asp-for="ListingCategory" asp-items="ViewBag.Categories" class="form-select">
-                    <option value="">Select a category</option>
+                    <option value="0">Select a category</option>
                 </select>
                 <span asp-validation-for="ListingCategory" class="text-danger"></span>
             </div>
@@ -44,9 +45,7 @@
                 <input asp-for="ListingStatus" class="form-check-input" />
                 <label asp-for="ListingStatus" class="form-check-label"></label>
             </div>
-            <!--
-                Going off what you had done before, i wanted to improve it so you can actually add files
-            -->
+            <!-- The student can choose a picture for the item. -->
             <div class="mb-3">
                 <label class="form-label">Image</label>
                 <input type="file" name="imageFile" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
