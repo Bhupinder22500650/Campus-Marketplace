@@ -1,12 +1,13 @@
 using Assignment3_Group.Data;
 using Assignment3_Group.Models;
-using HtmlAgilityPack;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Diagnostics;
-using System.Reflection.Metadata;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
 
 namespace Assignment3_Group.Controllers
@@ -15,33 +16,24 @@ namespace Assignment3_Group.Controllers
     {
         private readonly StudentMarketplaceDB _db;
 
+        // Let this controller use the database.
         public HomeController(StudentMarketplaceDB db)
         {
             _db = db;
         }
 
-        /*
-         * Don't think we need this so i commented it out
-            private readonly ILogger<HomeController> _logger;
-
-            public HomeController(ILogger<HomeController> logger)
-            {
-                _logger = logger;
-            }
-        */
-
+        // Show the home page.
         public IActionResult Index()
         {
-            //Making it so when user goes into the index it checks if they are loged in, if not it says login else shows their user name
-            string? sessionData = HttpContext.Session.GetString("CurrentUser");
+            string? sessionData =
+                HttpContext.Session.GetString("CurrentUser");
 
-            if (sessionData == null)
+            if (sessionData != null)
             {
-                ViewBag.UserName = null;
-            }else
-            {
-                User? currentUser = JsonSerializer.Deserialize<User>(sessionData);
-                if (currentUser != null) 
+                User? currentUser =
+                    JsonSerializer.Deserialize<User>(sessionData);
+
+                if (currentUser != null)
                 {
                     ViewBag.UserName = currentUser.UserName;
                 }
@@ -50,12 +42,14 @@ namespace Assignment3_Group.Controllers
             return View();
         }
 
-        //Sign up (create method)
+        // Show the sign-up form.
+        [HttpGet]
         public IActionResult SignUp()
         {
             return View();
         }
 
+        // Save the new student's account.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult SignUp(User obj)
@@ -64,130 +58,192 @@ namespace Assignment3_Group.Controllers
             {
                 _db.Users.Add(obj);
                 _db.SaveChanges();
-                //Will change so it sends to the actual page where you can look at whats listed
-                User currentUser = new User(obj.UserId, obj.UserName, obj.Password, obj.email, obj.PhoneNumber);
 
-                //Saving currentUser details into the http session
-                HttpContext.Session.SetString("CurrentUser", JsonSerializer.Serialize(currentUser));
+                User currentUser = new User(
+                    obj.UserId,
+                    obj.UserName,
+                    obj.Password,
+                    obj.email,
+                    obj.PhoneNumber);
+
+                // Remember the student after signing up.
+                HttpContext.Session.SetString(
+                    "CurrentUser",
+                    JsonSerializer.Serialize(currentUser));
 
                 return RedirectToAction("Index");
             }
+
             return View(obj);
         }
 
-        //Login (create method)
+        // Show the login form.
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
 
+        // Check the student's login details.
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Login(User obj)
         {
-            //Turning the database into a list so i can check the data inside
-            var usersDb = _db.Users.ToList();
+            var users = _db.Users.ToList();
 
-            for (int i = 0; i < usersDb.Count; i++)
+            for (int i = 0; i < users.Count; i++)
             {
-                //Making sure both the username and password are correct
-                if (usersDb[i].UserName == obj.UserName && usersDb[i].Password == obj.Password)
+                if (users[i].UserName == obj.UserName &&
+                    users[i].Password == obj.Password)
                 {
-                    User currentUser = new User(usersDb[i].UserId, usersDb[i].UserName, usersDb[i].Password, usersDb[i].email, usersDb[i].PhoneNumber);
+                    User currentUser = new User(
+                        users[i].UserId,
+                        users[i].UserName,
+                        users[i].Password,
+                        users[i].email,
+                        users[i].PhoneNumber);
 
-                    //Saving currentUser details into the http session
-                    HttpContext.Session.SetString("CurrentUser", JsonSerializer.Serialize(currentUser));
+                    // Remember the student after logging in.
+                    HttpContext.Session.SetString(
+                        "CurrentUser",
+                        JsonSerializer.Serialize(currentUser));
 
-                    //Need to try save data somewhere so the user is actually logged in and can do everything we want them to be able to do
                     return RedirectToAction("Index");
                 }
             }
-            //Find a way to tell the user they logged in wrong
+
             ViewBag.LoginError = "Incorrect username or password.";
 
             return View(obj);
         }
 
-        // Load listings for the marketplace feed.
+        // Show the marketplace feed.
         [HttpGet]
-        public IActionResult MarketPlace(string? search, int? categoryId,
-            string sort = "newest", string status = "all")
-        { 
-            if (HttpContext.Session.GetString("CurrentUser") == null)
+        public IActionResult MarketPlace(
+            string? search,
+            int? categoryId,
+            string sort = "newest",
+            string status = "all")
+        {
+            string? sessionData =
+                HttpContext.Session.GetString("CurrentUser");
+
+            if (sessionData == null)
             {
                 return RedirectToAction("Login");
             }
 
-                // Include also loads the category name for each listing.
-                var listings = _db.Listings.Include(item => item.Category)
-                    .AsNoTracking().AsQueryable();
+            User? currentUser =
+                JsonSerializer.Deserialize<User>(sessionData);
 
+            if (currentUser != null)
+            {
+                ViewBag.UserName = currentUser.UserName;
+            }
+
+            // Get the items and their category names.
+            var listings = _db.Listings
+                .Include(item => item.Category)
+                .AsNoTracking()
+                .AsQueryable();
+
+            // Search the title and description.
             if (!string.IsNullOrWhiteSpace(search))
             {
                 search = search.Trim();
+
                 listings = listings.Where(item =>
                     item.ListingTitle.Contains(search) ||
                     item.ListingDescription.Contains(search));
             }
 
+            // Show items from the chosen category.
             if (categoryId.HasValue)
             {
-                listings = listings.Where(item => item.ListingCategory == categoryId.Value);
+                listings = listings.Where(item =>
+                    item.ListingCategory == categoryId.Value);
             }
 
+            // Show available items or sold items.
             if (status == "available")
             {
-                listings = listings.Where(item => item.ListingStatus == true);
+                listings = listings.Where(item =>
+                    item.ListingStatus == true);
             }
             else if (status == "sold")
             {
-                listings = listings.Where(item => item.ListingStatus == false);
+                listings = listings.Where(item =>
+                    item.ListingStatus == false);
             }
             else
             {
                 status = "all";
             }
 
+            // Put the items in the chosen order.
             if (sort == "priceLow")
             {
-                listings = listings.OrderBy(item => item.ListingPrice)
+                listings = listings
+                    .OrderBy(item => item.ListingPrice)
                     .ThenByDescending(item => item.ListingId);
             }
             else if (sort == "priceHigh")
             {
-                listings = listings.OrderByDescending(item => item.ListingPrice)
+                listings = listings
+                    .OrderByDescending(item => item.ListingPrice)
                     .ThenByDescending(item => item.ListingId);
             }
             else
             {
                 sort = "newest";
-                listings = listings.OrderByDescending(item => item.ListingDate)
+
+                listings = listings
+                    .OrderByDescending(item => item.ListingDate)
                     .ThenByDescending(item => item.ListingId);
             }
 
-            // Keep the selected values visible after clicking Apply.
+            // Keep the student's search and filter choices.
             ViewBag.Search = search;
             ViewBag.CategoryId = categoryId;
             ViewBag.Sort = sort;
             ViewBag.Status = status;
-            ViewBag.Categories = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
-                _db.Categories.OrderBy(category => category.CategoryName).ToList(),
-                "CategoryId", "CategoryName", categoryId);
+
+            ViewBag.Categories = new SelectList(
+                _db.Categories
+                    .OrderBy(category => category.CategoryName)
+                    .ToList(),
+                "CategoryId",
+                "CategoryName",
+                categoryId);
 
             return View(listings.ToList());
         }
 
-        // DETAILS: display one listing, including the seller's contact details.
+        // Show the details of one item.
         [HttpGet]
         public IActionResult MarketPlaceDetails(int id)
         {
-            if (HttpContext.Session.GetString("CurrentUser") == null)
+            string? sessionData =
+                HttpContext.Session.GetString("CurrentUser");
+
+            if (sessionData == null)
             {
                 return RedirectToAction("Login");
             }
 
-            var listing = _db.Listings.Include(item => item.Category)
-                .Include(item => item.Seller).AsNoTracking()
+            User? currentUser =
+                JsonSerializer.Deserialize<User>(sessionData);
+
+            if (currentUser != null)
+            {
+                ViewBag.UserName = currentUser.UserName;
+            }
+
+            // Find the item, its category and its seller.
+            var listing = _db.Listings
+                .Include(item => item.Category)
+                .Include(item => item.Seller)
+                .AsNoTracking()
                 .FirstOrDefault(item => item.ListingId == id);
 
             if (listing == null)
@@ -198,94 +254,209 @@ namespace Assignment3_Group.Controllers
             return View(listing);
         }
 
-        // CREATE GET: display an empty form.
+        // Show an empty form for a new listing.
         [HttpGet]
         public IActionResult MarketPlaceCreate()
         {
-            if (HttpContext.Session.GetString("CurrentUser") == null)
-            {
-                return RedirectToAction("Login");
-            }
+            string? sessionData =
+                HttpContext.Session.GetString("CurrentUser");
 
-            ViewBag.Categories = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
-                _db.Categories.OrderBy(category => category.CategoryName).ToList(),
-                "CategoryId", "CategoryName");
-
-            return View(new Listings());
-        }
-
-        // CREATE POST: check the form, save the item and return to the feed.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult MarketPlaceCreate(
-            [Bind("ListingTitle,ListingDescription,ListingCategory,ListingPrice,ListingCondition,ListingStatus,ImageFileName")]
-            Listings obj, IFormFile? imageFile)
-        {
-            string? sessionData = HttpContext.Session.GetString("CurrentUser");
             if (sessionData == null)
             {
                 return RedirectToAction("Login");
             }
 
-            User? currentUser = JsonSerializer.Deserialize<User>(sessionData);
-            if (currentUser == null || !_db.Users.Any(user => user.UserId == currentUser.UserId))
+            User? currentUser =
+                JsonSerializer.Deserialize<User>(sessionData);
+
+            if (currentUser != null)
+            {
+                ViewBag.UserName = currentUser.UserName;
+            }
+
+            // Get the category names from the database.
+            ViewBag.Categories = new SelectList(
+                _db.Categories
+                    .OrderBy(category => category.CategoryName)
+                    .ToList(),
+                "CategoryId",
+                "CategoryName");
+
+            return View(new Listings());
+        }
+
+        // Check the form and save the new item.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult MarketPlaceCreate(
+            [Bind("ListingTitle,ListingDescription,ListingCategory,ListingPrice,ListingCondition,ListingStatus,ContactEmail,ContactPhoneNumber")]
+            Listings obj,
+            IFormFile? imageFile)
+        {
+            // Check that the student is signed in.
+            string? sessionData =
+                HttpContext.Session.GetString("CurrentUser");
+
+            if (sessionData == null)
             {
                 return RedirectToAction("Login");
             }
 
-            // Never let someone type another seller's ID in the form.
+            User? currentUser =
+                JsonSerializer.Deserialize<User>(sessionData);
+
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            // Check that the student's account still exists.
+            bool userExists = _db.Users.Any(
+                user => user.UserId == currentUser.UserId);
+
+            if (!userExists)
+            {
+                return RedirectToAction("Login");
+            }
+
+            // Use the signed-in student as the seller.
             obj.SellerId = currentUser.UserId;
             obj.ListingDate = DateTime.Now;
+
+            // The student does not enter the seller ID.
             ModelState.Remove("SellerId");
 
-            if (!_db.Categories.Any(category => category.CategoryId == obj.ListingCategory))
+            // Check that the chosen category exists.
+            if (obj.ListingCategory > 0)
             {
-                ModelState.AddModelError("ListingCategory", "Please select an existing category.");
+                bool categoryExists = _db.Categories.Any(
+                    category =>
+                        category.CategoryId == obj.ListingCategory);
+
+                if (!categoryExists)
+                {
+                    ModelState.AddModelError(
+                        "ListingCategory",
+                        "Please select an existing category.");
+                }
             }
 
-            //This is so the user can upload a file and we save the name to the database, but the actual image to wwwroot/images
+            string fileExtension = "";
+
+            // Check the picture when the student chooses one.
             if (imageFile != null && imageFile.Length > 0)
             {
-                var filename = Path.GetFileName(imageFile.FileName);
+                fileExtension = Path.GetExtension(
+                    imageFile.FileName).ToLowerInvariant();
 
-                var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", filename);
-
-                using (var stream = new FileStream(imagePath, FileMode.Create))
+                // Only allow these picture file endings.
+                if (fileExtension != ".jpg" &&
+                    fileExtension != ".jpeg" &&
+                    fileExtension != ".png" &&
+                    fileExtension != ".webp")
                 {
-                    imageFile.CopyTo(stream);
+                    ModelState.AddModelError(
+                        "imageFile",
+                        "Please choose a JPG, JPEG, PNG or WEBP image.");
                 }
 
-                obj.ImageFileName = filename;
+                // The picture must be 2 MB or smaller.
+                if (imageFile.Length > 2 * 1024 * 1024)
+                {
+                    ModelState.AddModelError(
+                        "imageFile",
+                        "Please choose an image of 2 MB or smaller.");
+                }
             }
 
+            // Save only when the form has no errors.
             if (ModelState.IsValid)
             {
                 try
                 {
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        // Give the picture a new name.
+                        string fileName =
+                            Guid.NewGuid().ToString("N") +
+                            fileExtension;
+
+                        string imageFolder = Path.Combine(
+                            Directory.GetCurrentDirectory(),
+                            "wwwroot",
+                            "images");
+
+                        // Create the folder if it is missing.
+                        Directory.CreateDirectory(imageFolder);
+
+                        string imagePath = Path.Combine(
+                            imageFolder,
+                            fileName);
+
+                        // Save the picture without replacing another file.
+                        using (var stream = new FileStream(
+                            imagePath,
+                            FileMode.CreateNew))
+                        {
+                            imageFile.CopyTo(stream);
+                        }
+
+                        obj.ImageFileName = fileName;
+                    }
+
+                    // Save the item and its optional contact details.
                     _db.Listings.Add(obj);
                     _db.SaveChanges();
+
                     return RedirectToAction("MarketPlace");
                 }
                 catch (DbUpdateException)
                 {
-                    ModelState.AddModelError(string.Empty,
-                        "The listing could not be saved. Check the database and try again.");
+                    ModelState.AddModelError(
+                        string.Empty,
+                        "The listing could not be saved. Please try again.");
+                }
+                catch (IOException)
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        "The picture could not be saved. Please choose it again.");
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        "The app could not save the picture in the images folder.");
                 }
             }
 
-            // Reload the dropdown when the form has an error.
-            ViewBag.Categories = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
-                _db.Categories.OrderBy(category => category.CategoryName).ToList(),
-                "CategoryId", "CategoryName", obj.ListingCategory);
+            // Show the categories again and keep the chosen category.
+            ViewBag.Categories = new SelectList(
+                _db.Categories
+                    .OrderBy(category => category.CategoryName)
+                    .ToList(),
+                "CategoryId",
+                "CategoryName",
+                obj.ListingCategory);
 
+            ViewBag.UserName = currentUser.UserName;
+
+            // Show the form again with its error messages.
             return View(obj);
         }
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+
+        // Show the error page.
+        [ResponseCache(
+            Duration = 0,
+            Location = ResponseCacheLocation.None,
+            NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel
             {
-                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+                RequestId =
+                    Activity.Current?.Id ??
+                    HttpContext.TraceIdentifier
             });
         }
     }

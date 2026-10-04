@@ -5,7 +5,7 @@
 }
 
 <h1>Sell an item</h1>
-<p>Your account supplies the seller ID and contact details.</p>
+<p>Add the item details. The email and phone number boxes are optional.</p>
 <div class="row">
     <div class="col-md-7">
         <form asp-controller="Home" asp-action="MarketPlaceCreate" method="post" enctype="multipart/form-data">
@@ -45,11 +45,25 @@
                 <input asp-for="ListingStatus" class="form-check-input" />
                 <label asp-for="ListingStatus" class="form-check-label"></label>
             </div>
+            <!-- Leave the email empty to use the account email. -->
+            <div class="mb-3">
+                <label asp-for="ContactEmail" class="form-label"></label>
+                <input asp-for="ContactEmail" type="email" class="form-control" maxlength="254" />
+                <span asp-validation-for="ContactEmail" class="text-danger"></span>
+                <div class="form-text">If you leave this empty, buyers will see your account email.</div>
+            </div>
+            <!-- Leave the phone number empty if you do not want to share it. -->
+            <div class="mb-3">
+                <label asp-for="ContactPhoneNumber" class="form-label"></label>
+                <input asp-for="ContactPhoneNumber" type="tel" class="form-control" maxlength="30" />
+                <span asp-validation-for="ContactPhoneNumber" class="text-danger"></span>
+                <div class="form-text">Only add a number if you want buyers to contact you by phone.</div>
+            </div>
             <!-- The student can choose a picture for the item. -->
             <div class="mb-3">
-                <label class="form-label">Image</label>
-                <input type="file" name="imageFile" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
-                <div class="form-text">Select an image from your listings.</div>
+                <label for="imageFile" class="form-label">Image (optional)</label>
+                <input id="imageFile" type="file" name="imageFile" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
+                <div class="form-text">Choose an image from your computer.</div>
             </div>
             <button type="submit" class="btn btn-primary">Create listing</button>
             <a asp-controller="Home" asp-action="MarketPlace" class="btn btn-outline-secondary">Cancel</a>

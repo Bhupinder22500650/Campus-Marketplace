@@ -37,16 +37,29 @@
         <h2 class="h5">Seller contact details</h2>
         @if (Model.Seller != null)
         {
-            <p>Student username / ID: @Model.Seller.UserName / @Model.Seller.UserId</p>
+            <p>Seller: @Model.Seller.UserName</p>
+        }
+        @* Use the listing email first. If it is empty, use the account email. *@
+        @if (!string.IsNullOrWhiteSpace(Model.ContactEmail))
+        {
+            <p>Student email: @Model.ContactEmail</p>
+        }
+        else if (Model.Seller != null)
+        {
             <p>Student email: @Model.Seller.email</p>
-            @if (!string.IsNullOrWhiteSpace(Model.Seller.PhoneNumber))
-            {
-                <p>Mobile number: @Model.Seller.PhoneNumber</p>
-            }
-            else
-            {
-                <p>Mobile number: Not provided</p>
-            }
+        }
+        else
+        {
+            <p>Student email: Not provided</p>
+        }
+        @* Only show a phone number when the student added one to this listing. *@
+        @if (!string.IsNullOrWhiteSpace(Model.ContactPhoneNumber))
+        {
+            <p>Mobile number: @Model.ContactPhoneNumber</p>
+        }
+        else
+        {
+            <p>Mobile number: Not provided</p>
         }
         <p>Contact the seller to arrange payment and collection.</p>
     </div>
