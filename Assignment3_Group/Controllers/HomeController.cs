@@ -25,23 +25,8 @@ namespace Assignment3_Group.Controllers
         // Show the home page.
         public IActionResult Index()
         {
-            string? sessionData =
-                HttpContext.Session.GetString("CurrentUser");
-
-            if (sessionData != null)
-            {
-                User? currentUser =
-                    JsonSerializer.Deserialize<User>(sessionData);
-
-                if (currentUser != null)
-                {
-                    ViewBag.UserName = currentUser.UserName;
-                }
-            }
-
             return View();
         }
-
         // Show the sign-up form.
         [HttpGet]
         public IActionResult SignUp()
@@ -443,6 +428,12 @@ namespace Assignment3_Group.Controllers
 
             // Show the form again with its error messages.
             return View(obj);
+        }
+
+        //User details (only for signed in user)
+        public IActionResult UserDetails()
+        {
+            return View();
         }
 
         // Show the error page.
