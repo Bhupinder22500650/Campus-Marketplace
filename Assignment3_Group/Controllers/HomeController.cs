@@ -102,6 +102,17 @@ namespace Assignment3_Group.Controllers
             return View(obj);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SignOut()
+        {
+
+                // Removes the current user the session remembers and puts them back to index page
+                HttpContext.Session.Remove("CurrentUser");
+
+                return RedirectToAction("Index");
+        }
+
         // Show the marketplace feed.
         [HttpGet]
         public IActionResult MarketPlace(
@@ -427,6 +438,24 @@ namespace Assignment3_Group.Controllers
             ViewBag.UserName = currentUser.UserName;
 
             // Show the form again with its error messages.
+            return View(obj);
+        }
+
+        public IActionResult MarketPlaceEdit()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult MarketPlaceEdit(Listings obj)
+        {
+            if (ModelState.IsValid)
+            {
+                _db.Listings.Update(obj);
+                _db.SaveChanges();
+                return RedirectToAction("Index");
+            }
             return View(obj);
         }
 

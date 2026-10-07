@@ -1,0 +1,89 @@
+﻿@model Assignment3_Group.Models.Listings
+
+@{
+    ViewData["Title"] = "MarketPlaceEdit";
+}
+
+<h1>MarketPlaceEdit</h1>
+
+<h4>Listings</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="MarketPlaceEdit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="ListingId" />
+            <div class="form-group">
+                <label asp-for="SellerId" class="control-label"></label>
+                <select asp-for="SellerId" class="form-control" asp-items="ViewBag.SellerId"></select>
+                <span asp-validation-for="SellerId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ListingCategory" class="control-label"></label>
+                <select asp-for="ListingCategory" class="form-control" asp-items="ViewBag.ListingCategory"></select>
+                <span asp-validation-for="ListingCategory" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ListingTitle" class="control-label"></label>
+                <input asp-for="ListingTitle" class="form-control" />
+                <span asp-validation-for="ListingTitle" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ListingDescription" class="control-label"></label>
+                <input asp-for="ListingDescription" class="form-control" />
+                <span asp-validation-for="ListingDescription" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ListingPrice" class="control-label"></label>
+                <input asp-for="ListingPrice" class="form-control" />
+                <span asp-validation-for="ListingPrice" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ListingCondition" class="control-label"></label>
+                <input asp-for="ListingCondition" class="form-control" />
+                <span asp-validation-for="ListingCondition" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="ListingStatus" /> @Html.DisplayNameFor(model => model.ListingStatus)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="ListingDate" class="control-label"></label>
+                <input asp-for="ListingDate" class="form-control" />
+                <span asp-validation-for="ListingDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ContactEmail" class="control-label"></label>
+                <input asp-for="ContactEmail" class="form-control" />
+                <span asp-validation-for="ContactEmail" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ContactPhoneNumber" class="control-label"></label>
+                <input asp-for="ContactPhoneNumber" class="form-control" />
+                <span asp-validation-for="ContactPhoneNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ImageFileName" class="control-label"></label>
+                <input asp-for="ImageFileName" class="form-control" />
+                <span asp-validation-for="ImageFileName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ProductImage" class="control-label"></label>
+                <input asp-for="ProductImage" class="form-control" />
+                <span asp-validation-for="ProductImage" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

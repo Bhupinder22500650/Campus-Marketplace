@@ -33,4 +33,38 @@
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.UserId">Edit</a> |
     <a asp-action="Index">Back to List</a>
+
+    <form asp-controller="Home" asp-action="SignOut" method="post" class="mt-4"> 
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-outline-secondary">Sign out</button>
+    </form>
 </div>
+
+<!-- 
+    [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SignUp(User obj)
+        {
+            if (ModelState.IsValid)
+            {
+                _db.Users.Add(obj);
+                _db.SaveChanges();
+
+                User currentUser = new User(
+                    obj.UserId,
+                    obj.UserName,
+                    obj.Password,
+                    obj.email,
+                    obj.PhoneNumber);
+
+                // Remember the student after signing up.
+                HttpContext.Session.SetString(
+                    "CurrentUser",
+                    JsonSerializer.Serialize(currentUser));
+
+                return RedirectToAction("Index");
+            }
+
+            return View(obj);
+        }
+-->
