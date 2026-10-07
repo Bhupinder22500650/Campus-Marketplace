@@ -433,7 +433,18 @@ namespace Assignment3_Group.Controllers
         //User details (only for signed in user)
         public IActionResult UserDetails()
         {
-            return View();
+            string? sessionData =
+                HttpContext.Session.GetString("CurrentUser");
+
+            if (sessionData == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            User? currentUser =
+                JsonSerializer.Deserialize<User>(sessionData); 
+
+            return View(currentUser);
         }
 
         // Show the error page.
