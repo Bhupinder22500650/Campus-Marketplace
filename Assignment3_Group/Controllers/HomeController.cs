@@ -446,15 +446,13 @@ namespace Assignment3_Group.Controllers
             return View();
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult MarketPlaceEdit(Listings obj)
+        [HttpGet]
+        public IActionResult MarketPlaceEdit(int id)
         {
-            if (ModelState.IsValid)
+            var obj = _db.Listings.FirstOrDefault(item => item.ListingId == id);
+            if (obj == null)
             {
-                _db.Listings.Update(obj);
-                _db.SaveChanges();
-                return RedirectToAction("Index");
+                return NotFound();
             }
             return View(obj);
         }
