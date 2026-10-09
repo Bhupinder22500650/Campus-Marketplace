@@ -56,7 +56,8 @@ namespace Assignment3_Group.Controllers
                     "CurrentUser",
                     JsonSerializer.Serialize(currentUser));
 
-                return RedirectToAction("Index");
+                // Show all marketplace items after login.
+                return RedirectToAction("MarketPlace");
             }
 
             return View(obj);
@@ -93,10 +94,12 @@ namespace Assignment3_Group.Controllers
                         "CurrentUser",
                         JsonSerializer.Serialize(currentUser));
 
-                    return RedirectToAction("Index");
+                    // Open the marketplace after login.
+                    return RedirectToAction("MarketPlace");
                 }
             }
 
+            // Show an error if the login details are wrong.
             ViewBag.LoginError = "Incorrect username or password.";
 
             return View(obj);
