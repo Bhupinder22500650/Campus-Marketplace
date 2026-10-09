@@ -1,5 +1,6 @@
 using Assignment3_Group.Data;
 using Assignment3_Group.Models;
+using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -191,6 +192,10 @@ namespace Assignment3_Group.Controllers
                 listings = listings
                     .OrderByDescending(item => item.ListingPrice)
                     .ThenByDescending(item => item.ListingId);
+            }
+            else if (sort == "createdByYou")
+            {
+                listings = listings.Where(item => item.ListingId == currentUser.UserId).OrderByDescending(item => item.ListingDate);
             }
             else
             {
