@@ -13,9 +13,12 @@
         <form asp-action="MarketPlaceEdit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="ListingId" />
+
             <div class="form-group">
                 <label asp-for="ListingCategory" class="control-label"></label>
-                <select asp-for="ListingCategory" class="form-control" asp-items="ViewBag.ListingCategory"></select>
+                <select asp-for="ListingCategory" asp-items="ViewBag.Categories" class="form-select">
+                    <option value="0">Select a category</option>
+                </select>
                 <span asp-validation-for="ListingCategory" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -35,7 +38,9 @@
             </div>
             <div class="form-group">
                 <label asp-for="ListingCondition" class="control-label"></label>
-                <input asp-for="ListingCondition" class="form-control" />
+                <select asp-for="ListingCondition" asp-items="ViewBag.Condition" class="form-select">
+                    <option value="">Select a condition</option>
+                </select>
                 <span asp-validation-for="ListingCondition" class="text-danger"></span>
             </div>
             <div class="form-group form-check">
@@ -58,9 +63,9 @@
                 <input asp-for="ContactPhoneNumber" class="form-control" />
                 <span asp-validation-for="ContactPhoneNumber" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="mb-3">
                 <label asp-for="ImageFileName" class="control-label"></label>
-                <input asp-for="ImageFileName" class="form-control" />
+                <input asp-for="ImageFileName" type="file" name="imageFile" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
                 <span asp-validation-for="ImageFileName" class="text-danger"></span>
             </div>
             <div class="form-group">

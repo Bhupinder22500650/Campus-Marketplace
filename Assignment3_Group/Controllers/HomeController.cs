@@ -441,20 +441,112 @@ namespace Assignment3_Group.Controllers
             return View(obj);
         }
 
-        public IActionResult MarketPlaceEdit()
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult MarketPlaceEdit(Listings obj)
         {
-            return View();
+            // Based off sample school app but changed for this app
+
+            if (!ModelState.IsValid)
+            {
+                var listing = _db.Listings.FirstOrDefault(
+                    x => x.ListingId == obj.ListingId);
+
+                if (listing == null)
+                {
+                    return NotFound();
+                }
+
+                listing.ListingCategory = obj.ListingCategory;
+                listing.ListingTitle = obj.ListingTitle;
+                listing.ListingDescription = obj.ListingDescription;
+                listing.ListingPrice = obj.ListingPrice;
+                listing.ListingCondition = obj.ListingCondition;
+                listing.ListingStatus = obj.ListingStatus;
+                listing.ContactEmail = obj.ContactEmail;
+                listing.ContactPhoneNumber = obj.ContactPhoneNumber;
+
+                _db.SaveChanges();
+
+                return RedirectToAction("MarketPlace");
+            }
+
+            ViewBag.Categories = new SelectList(
+                _db.Categories.OrderBy(c => c.CategoryName).ToList(),
+                "CategoryId",
+                "CategoryName",
+                obj.ListingCategory);
+
+            return View(obj);
         }
 
         [HttpGet]
         public IActionResult MarketPlaceEdit(int id)
         {
+            /*
+             // Show the categories again and keep the chosen category.
+            ViewBag.Categories = new SelectList(
+                _db.Categories
+                    .OrderBy(category => category.CategoryName)
+                    .ToList(),
+                "CategoryId",
+                "CategoryName",
+                obj.ListingCategory);
+             */
             var obj = _db.Listings.FirstOrDefault(item => item.ListingId == id);
+
             if (obj == null)
             {
                 return NotFound();
             }
+
+            // Creating category list like the one in marketplace create
+            ViewBag.Categories = new SelectList(
+                _db.Categories
+                    .OrderBy(category => category.CategoryName)
+                    .ToList(),
+                "CategoryId",
+                "CategoryName",
+                obj.ListingCategory);
+
+            // Creating condition list like the one in marketplace create
+            ViewBag.Condition = new SelectList(
+    new List<string> { "New", "Used" },
+    obj.ListingCondition);
+
             return View(obj);
+        }
+
+        //Based off student app delete method
+        [HttpGet]
+        public IActionResult MarketPlaceDelete(int? id)
+        {
+            if (id == null || id == 0)
+            {
+                return NotFound();
+            }
+            var ListingFromDb = _db.Listings.Find(id);
+            if (ListingFromDb == null)
+            {
+                return NotFound();
+            }
+
+            return View(ListingFromDb);
+        }
+
+        //Based off student app delete method
+        [HttpPost, ActionName("MarketPlaceDelete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeletePost(int? id)
+        {
+            var obj = _db.Listings.Find(id);
+            if (obj == null)
+            {
+                return NotFound();
+            }
+            _db.Listings.Remove(obj);
+            _db.SaveChanges();
+            return RedirectToAction("MarketPlace");
         }
 
         //User details (only for signed in user)
