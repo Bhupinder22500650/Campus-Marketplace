@@ -1,0 +1,62 @@
+﻿@model IEnumerable<Assignment3_Group.Models.Listings>
+
+@{
+    ViewData["Title"] = "My Listings";
+}
+
+<h1>My Listings</h1>
+<p>Manage the items you have added.</p>
+
+@if (TempData["ListingMessage"] != null)
+{
+    <script> 
+        alert(@Json.Serialize(TempData["ListingMessage"]));
+    </script>
+}
+@if (TempData["ListingError"] != null)
+{
+    <script>
+        alert(@Json.Serialize(TempData["ListingError"]));
+    </script>
+}
+
+<a asp-controller="Home" asp-action="MarketPlaceCreate" class="btn btn-primary mb-3">Add a listing</a>
+
+@if (!Model.Any())
+{
+    <p>You have not added any listings yet.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr><th scope="col">Title</th><th scope="col">Price</th><th scope="col">Status</th><th scope="col">Actions</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.ListingTitle</td>
+                        <td>NZ$ @item.ListingPrice.ToString("0.00")</td>
+                        <td>@(item.ListingStatus ? "Available" : "Sold")</td>
+                        <td>
+                            <a asp-controller="Home" asp-action="MarketPlaceDetails" asp-route-id="@item.ListingId" class="btn btn-sm btn-outline-secondary">View</a>
+                            <a asp-controller="Home" asp-action="MarketPlaceEdit" asp-route-id="@item.ListingId" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <a asp-controller="Home" asp-action="MarketPlaceDelete" asp-route-id="@item.ListingId" class="btn btn-sm btn-outline-danger">Delete</a>
+
+                            @* Submit the new status to the controller. *@
+                            <form asp-controller="Home" asp-action="ChangeListingStatus" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@item.ListingId" />
+                                <input type="hidden" name="isAvailable" value="@(item.ListingStatus ? "false" : "true")" />
+                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                    @(item.ListingStatus ? "Mark as sold" : "Mark as available")
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

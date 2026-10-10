@@ -38,10 +38,7 @@
             <div class="container-fluid">
 
                 <!-- App name on the left. -->
-                <a class="navbar-brand"
-                   asp-area=""
-                   asp-controller="Home"
-                   asp-action="Index">
+                <a class="navbar-brand"asp-area=""basp-controller="Home" asp-action="Index">
                     Student Marketplace app
                 </a>
 
@@ -79,12 +76,20 @@
                         }
                         else
                         {
-                            <!-- Show the username after login. -->
+                            <!-- Show the student's own listings after login. -->
                             <li class="nav-item">
-                                <a id="userDetails" class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UserDetails">
+                                <a class="nav-link text-dark" asp-controller="Home" asp-action="MyListings">
+                                    My Listings
+                                </a>
+                            </li>
+
+                            <!-- Open the student's profile. -->
+                            <li class="nav-item">
+                                <a id="userDetails" class="nav-link text-dark" asp-controller="Home" asp-action="UserDetails">
                                     @currentUser.UserName
                                 </a>
                             </li>
+
                         }
 
                     </ul>

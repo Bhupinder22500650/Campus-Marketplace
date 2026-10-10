@@ -1,7 +1,4 @@
-﻿@using Assignment3_Group.Models
-@using System.Text.Json
-
-@model Assignment3_Group.Models.Listings
+﻿@model Assignment3_Group.Models.Listings
 
 @{
     ViewData["Title"] = "Item details";
@@ -68,16 +65,3 @@
     </div>
 </div>
 <p class="mt-4"><a asp-controller="Home" asp-action="MarketPlace" class="btn btn-outline-secondary">Back to feed</a></p>
-@{
-    // Check if a user is logged in.
-    string? sessionData = Context.Session.GetString("CurrentUser");
-    User currentUser = JsonSerializer.Deserialize<User>(sessionData);
-
-    //Checking if the current user is the same one who made the listing
-    if (Model.SellerId == currentUser.UserId)
-    {
-        <p class="mt-4"><a asp-controller="Home" asp-action="MarketPlaceEdit" asp-route-id="@Model.ListingId" class="btn btn-outline-secondary">Edit</a></p>
-        <p class="mt-4"><a asp-controller="Home" asp-action="MarketPlaceDelete" asp-route-id="@Model.ListingId" class="btn btn-outline-secondary">Delete</a></p>
-    }
-}
-

@@ -111,10 +111,10 @@ namespace Assignment3_Group.Controllers
         public IActionResult SignOut()
         {
 
-                // Removes the current user the session remembers and puts them back to index page
-                HttpContext.Session.Remove("CurrentUser");
+            // Removes the current user the session remembers and puts them back to index page
+            HttpContext.Session.Remove("CurrentUser");
 
-                return RedirectToAction("Index");
+            return RedirectToAction("Index");
         }
 
         // Show the marketplace feed.
@@ -136,10 +136,12 @@ namespace Assignment3_Group.Controllers
             User? currentUser =
                 JsonSerializer.Deserialize<User>(sessionData);
 
-            if (currentUser != null)
+            if (currentUser == null)
             {
-                ViewBag.UserName = currentUser.UserName;
+                return RedirectToAction("Login");
             }
+
+            ViewBag.UserName = currentUser.UserName;
 
             // Get the items and their category names.
             var listings = _db.Listings
@@ -195,7 +197,10 @@ namespace Assignment3_Group.Controllers
             }
             else if (sort == "createdByYou")
             {
-                listings = listings.Where(item => item.ListingId == currentUser.UserId).OrderByDescending(item => item.ListingDate);
+                listings = listings
+                    .Where(item => item.SellerId == currentUser.UserId)
+                    .OrderByDescending(item => item.ListingDate)
+                    .ThenByDescending(item => item.ListingId);
             }
             else
             {
@@ -449,127 +454,236 @@ namespace Assignment3_Group.Controllers
             return View(obj);
         }
 
+        // Read the student saved by our login page.
+        private User? GetCurrentUser()
+        {
+            string? sessionData = HttpContext.Session.GetString("CurrentUser");
+
+            if (string.IsNullOrEmpty(sessionData))
+            {
+                return null;
+            }
+
+            return JsonSerializer.Deserialize<User>(sessionData);
+        }
+
+        // Show only the signed-in student's listings.
+        [HttpGet]
+        public IActionResult MyListings()
+        {
+            User? currentUser = GetCurrentUser();
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var listings = _db.Listings
+                .AsNoTracking()
+                .Where(item => item.SellerId == currentUser.UserId)
+                .OrderByDescending(item => item.ListingDate)
+                .ThenByDescending(item => item.ListingId)
+                .ToList();
+
+            return View(listings);
+        }
+
+        // Open the edit form for one of this student's items.
+        [HttpGet]
+        public IActionResult MarketPlaceEdit(int id)
+        {
+            User? currentUser = GetCurrentUser();
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            // Check the item ID AND its owner.
+            var listing = _db.Listings.FirstOrDefault(item =>
+                item.ListingId == id && item.SellerId == currentUser.UserId);
+
+            if (listing == null)
+            {
+                return NotFound();
+            }
+
+            ViewBag.Categories = new SelectList(
+                _db.Categories.OrderBy(category => category.CategoryName).ToList(),
+                "CategoryId", "CategoryName", listing.ListingCategory);
+
+            return View(listing);
+        }
+
+        // Save the edit form.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult MarketPlaceEdit(Listings obj)
+        public IActionResult MarketPlaceEdit(
+            [Bind("ListingId,ListingTitle,ListingDescription,ListingCategory," +
+                  "ListingPrice,ListingCondition,ListingStatus,ContactEmail,ContactPhoneNumber")]
+            Listings obj)
         {
-            // Based off sample school app but changed for this app
-
-            if (!ModelState.IsValid)
+            User? currentUser = GetCurrentUser();
+            if (currentUser == null)
             {
-                var listing = _db.Listings.FirstOrDefault(
-                    x => x.ListingId == obj.ListingId);
+                return RedirectToAction("Login");
+            }
 
-                if (listing == null)
-                {
-                    return NotFound();
-                }
+            // Check ownership again when the form is submitted.
+            var listing = _db.Listings.FirstOrDefault(item =>
+                item.ListingId == obj.ListingId && item.SellerId == currentUser.UserId);
 
-                listing.ListingCategory = obj.ListingCategory;
+            if (listing == null)
+            {
+                return NotFound();
+            }
+
+            // The form does not choose the seller. Keep the saved seller.
+            obj.SellerId = listing.SellerId;
+            ModelState.Remove("SellerId");
+
+            if (obj.ListingCategory > 0 &&
+                !_db.Categories.Any(category => category.CategoryId == obj.ListingCategory))
+            {
+                ModelState.AddModelError("ListingCategory", "Please select a valid category.");
+            }
+
+            // Save only when the form has no validation errors.
+            if (ModelState.IsValid)
+            {
                 listing.ListingTitle = obj.ListingTitle;
                 listing.ListingDescription = obj.ListingDescription;
+                listing.ListingCategory = obj.ListingCategory;
                 listing.ListingPrice = obj.ListingPrice;
                 listing.ListingCondition = obj.ListingCondition;
                 listing.ListingStatus = obj.ListingStatus;
                 listing.ContactEmail = obj.ContactEmail;
                 listing.ContactPhoneNumber = obj.ContactPhoneNumber;
 
-                _db.SaveChanges();
-
-                return RedirectToAction("MarketPlace");
+                try
+                {
+                    _db.SaveChanges();
+                    TempData["ListingMessage"] = "Your listing was updated.";
+                    return RedirectToAction("MyListings");
+                }
+                catch (DbUpdateException)
+                {
+                    ModelState.AddModelError("", "The update could not be saved. Please try again.");
+                }
             }
 
+            // Reload the dropdown if we need to show the form again.
             ViewBag.Categories = new SelectList(
-                _db.Categories.OrderBy(c => c.CategoryName).ToList(),
-                "CategoryId",
-                "CategoryName",
-                obj.ListingCategory);
+                _db.Categories.OrderBy(category => category.CategoryName).ToList(),
+                "CategoryId", "CategoryName", obj.ListingCategory);
 
             return View(obj);
         }
 
+        // Show the delete confirmation page.
         [HttpGet]
-        public IActionResult MarketPlaceEdit(int id)
+        public IActionResult MarketPlaceDelete(int id)
         {
-            /*
-             // Show the categories again and keep the chosen category.
-            ViewBag.Categories = new SelectList(
-                _db.Categories
-                    .OrderBy(category => category.CategoryName)
-                    .ToList(),
-                "CategoryId",
-                "CategoryName",
-                obj.ListingCategory);
-             */
-            var obj = _db.Listings.FirstOrDefault(item => item.ListingId == id);
-
-            if (obj == null)
-            {
-                return NotFound();
-            }
-
-            // Creating category list like the one in marketplace create
-            ViewBag.Categories = new SelectList(
-                _db.Categories
-                    .OrderBy(category => category.CategoryName)
-                    .ToList(),
-                "CategoryId",
-                "CategoryName",
-                obj.ListingCategory);
-
-            // Creating condition list like the one in marketplace create
-            ViewBag.Condition = new SelectList(
-    new List<string> { "New", "Used" },
-    obj.ListingCondition);
-
-            return View(obj);
-        }
-
-        //Based off student app delete method
-        [HttpGet]
-        public IActionResult MarketPlaceDelete(int? id)
-        {
-            if (id == null || id == 0)
-            {
-                return NotFound();
-            }
-            var ListingFromDb = _db.Listings.Find(id);
-            if (ListingFromDb == null)
-            {
-                return NotFound();
-            }
-
-            return View(ListingFromDb);
-        }
-
-        //Based off student app delete method
-        [HttpPost, ActionName("MarketPlaceDelete")]
-        [ValidateAntiForgeryToken]
-        public IActionResult DeletePost(int? id)
-        {
-            var obj = _db.Listings.Find(id);
-            if (obj == null)
-            {
-                return NotFound();
-            }
-            _db.Listings.Remove(obj);
-            _db.SaveChanges();
-            return RedirectToAction("MarketPlace");
-        }
-
-        //User details (only for signed in user)
-        public IActionResult UserDetails()
-        {
-            string? sessionData =
-                HttpContext.Session.GetString("CurrentUser");
-
-            if (sessionData == null)
+            User? currentUser = GetCurrentUser();
+            if (currentUser == null)
             {
                 return RedirectToAction("Login");
             }
 
-            User? currentUser =
-                JsonSerializer.Deserialize<User>(sessionData); 
+            var listing = _db.Listings.FirstOrDefault(item =>
+                item.ListingId == id && item.SellerId == currentUser.UserId);
+
+            if (listing == null)
+            {
+                return NotFound();
+            }
+
+            return View(listing);
+        }
+
+        // Delete only after the student confirms the form.
+        [HttpPost, ActionName("MarketPlaceDelete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeletePost(int id)
+        {
+            User? currentUser = GetCurrentUser();
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            // A hidden form field can be changed, so check the owner here too.
+            var listing = _db.Listings.FirstOrDefault(item =>
+                item.ListingId == id && item.SellerId == currentUser.UserId);
+
+            if (listing == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                _db.Listings.Remove(listing);
+                _db.SaveChanges();
+                TempData["ListingMessage"] = "Your listing was deleted.";
+            }
+            catch (DbUpdateException)
+            {
+                TempData["ListingError"] = "The listing could not be deleted. Please try again.";
+            }
+
+            return RedirectToAction("MyListings");
+        }
+
+        // Change an item to sold or available.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ChangeListingStatus(int id, bool isAvailable)
+        {
+            User? currentUser = GetCurrentUser();
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var listing = _db.Listings.FirstOrDefault(item =>
+                item.ListingId == id && item.SellerId == currentUser.UserId);
+
+            if (listing == null)
+            {
+                return NotFound();
+            }
+
+            // True = available. False = sold.
+            listing.ListingStatus = isAvailable;
+
+            try
+            {
+                _db.SaveChanges();
+                TempData["ListingMessage"] = isAvailable
+                    ? "Your listing is available again."
+                    : "Your listing was marked as sold.";
+            }
+            catch (DbUpdateException)
+            {
+                TempData["ListingError"] = "The status could not be saved. Please try again.";
+            }
+
+            return RedirectToAction("MyListings");
+        }
+
+        // Show the signed-in student's profile.
+        [HttpGet]
+        public IActionResult UserDetails()
+        {
+            User? currentUser = GetCurrentUser();
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login");
+            }
 
             return View(currentUser);
         }
