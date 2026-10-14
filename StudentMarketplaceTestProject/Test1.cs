@@ -1,9 +1,21 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ActionConstraints;
-using Assignment3_Group.Controllers;
+﻿using Assignment3_Group.Controllers;
 using Assignment3_Group.Data;
 using Assignment3_Group.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
+using System;
+using Moq; 
+using System.Text;
+using System.Text.Json;
+
+
 
 namespace StudentMarketplaceTestProject
 {
@@ -11,7 +23,7 @@ namespace StudentMarketplaceTestProject
     public sealed class Test1
     {
         //Creating in-memory database from student application 
-        private StudentMarketplaceDB GetDbContext()
+        private StudentMarketplaceDB A_GetDbContext()
         {
             //creating temporary DB for testing purposes
 
@@ -54,7 +66,7 @@ namespace StudentMarketplaceTestProject
                 new Category
                 {
                     CategoryId = 123,
-                    CategoryName = "Toys", 
+                    CategoryName = "Toys",
                     CategoryDescription = "Kids toys"
                 },
 
@@ -78,15 +90,15 @@ namespace StudentMarketplaceTestProject
                 new Listings
                 {
                     ListingId = 123,
-                    SellerId = 123, 
+                    SellerId = 123,
                     ListingCategory = 123,
                     ListingPrice = 20,
                     ListingStatus = true,
-                    ListingCondition = "Used", 
+                    ListingCondition = "Used",
                     ListingDate = DateTime.Now,
-                    ListingDescription = "This is an old woody toy from toy story", 
-                    ListingTitle = "Woody toy story", 
-                    ContactEmail = "Jacob.Gold@gmail.com", 
+                    ListingDescription = "This is an old woody toy from toy story",
+                    ListingTitle = "Woody toy story",
+                    ContactEmail = "Jacob.Gold@gmail.com",
                     ContactPhoneNumber = "0216554328"
                 },
 
@@ -124,10 +136,63 @@ namespace StudentMarketplaceTestProject
             context.SaveChanges();
             return context;
         }
-        //For this test case, i want to test creating an account, checking account details, then creating a listing in market place
+
         [TestMethod]
-        public void TestMethod1()
+        public void B_Index_Load()
         {
+            // Arrange
+            var context = A_GetDbContext();
+            var controller = new HomeController(context);
+
+            // Act
+            IActionResult result = controller.Index();
+
+            // Assert
+            // Making sure result is retrun view since that is all index passes
+            if (result is ViewResult viewResult)
+            {
+                // The result is definitely a ViewResult! Now check the properties.
+                Assert.IsNull(viewResult.Model);
+
+            }
+            else
+            {
+                // Force the test to fail because it wasn't a ViewResult
+                Assert.Fail($"Expected a ViewResult, but got a {result?.GetType().Name ?? "null"}");
+            }
+        }
+
+        [TestMethod]
+        public void C_Index_CreateAccount()
+        {
+            // Arrange
+            var context = A_GetDbContext();
+            var controller = new HomeController(context);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Session = new Mock<ISession>().Object;
+
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+
+            //create a user so signUp works 
+            var user = new User
+            {
+                UserName = "TestStudent",
+                Password = "TestPassword123",
+                email = "teststudent@example.com",
+                PhoneNumber = "0211234567"
+            };
+
+            // Act
+            IActionResult result = controller.SignUp(user);
+
+            // Assert
+            Assert.AreEqual(4, context.Users.Count());
+            Assert.IsTrue(context.Users.Any(u => u.UserName == "TestStudent"), "The new user was not saved.");
+            Assert.IsInstanceOfType(result, typeof(RedirectToActionResult));
         }
     }
 }
