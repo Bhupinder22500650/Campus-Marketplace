@@ -1,6 +1,5 @@
 using Assignment3_Group.Data;
 using Assignment3_Group.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,13 +24,11 @@ namespace Assignment3_Group.Controllers
         }
 
         // Show the home page.
-        [Authorize]
         public IActionResult Index()
         {
             return View();
         }
         // Show the sign-up form.
-        [Authorize]
         [HttpGet]
         public IActionResult SignUp()
         {
@@ -39,7 +36,6 @@ namespace Assignment3_Group.Controllers
         }
 
         // Save the new student's account.
-        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult SignUp(User obj)
@@ -69,7 +65,6 @@ namespace Assignment3_Group.Controllers
         }
 
         // Show the login form.
-        [Authorize]
         [HttpGet]
         public IActionResult Login()
         {
@@ -77,7 +72,6 @@ namespace Assignment3_Group.Controllers
         }
 
         // Check the student's login details.
-        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Login(User obj)
@@ -112,7 +106,6 @@ namespace Assignment3_Group.Controllers
             return View(obj);
         }
 
-        [Authorize]       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult SignOut()
@@ -125,7 +118,6 @@ namespace Assignment3_Group.Controllers
         }
 
         // Show the marketplace feed.
-        [Authorize]
         [HttpGet]
         public IActionResult MarketPlace(
             string? search,
@@ -237,7 +229,6 @@ namespace Assignment3_Group.Controllers
         }
 
         // Show the details of one item.
-        [Authorize]
         [HttpGet]
         public IActionResult MarketPlaceDetails(int id)
         {
@@ -252,10 +243,12 @@ namespace Assignment3_Group.Controllers
             User? currentUser =
                 JsonSerializer.Deserialize<User>(sessionData);
 
-            if (currentUser != null)
+            if (currentUser == null)
             {
-                ViewBag.UserName = currentUser.UserName;
+                return RedirectToAction("Login");
             }
+
+            ViewBag.UserName = currentUser.UserName;
 
             // Find the item, its category and its seller.
             var listing = _db.Listings
@@ -273,7 +266,6 @@ namespace Assignment3_Group.Controllers
         }
 
         // Show an empty form for a new listing.
-        [Authorize]
         [HttpGet]
         public IActionResult MarketPlaceCreate()
         {
@@ -288,10 +280,12 @@ namespace Assignment3_Group.Controllers
             User? currentUser =
                 JsonSerializer.Deserialize<User>(sessionData);
 
-            if (currentUser != null)
+            if (currentUser == null)
             {
-                ViewBag.UserName = currentUser.UserName;
+                return RedirectToAction("Login");
             }
+
+            ViewBag.UserName = currentUser.UserName;
 
             // Get the category names from the database.
             ViewBag.Categories = new SelectList(
@@ -305,7 +299,6 @@ namespace Assignment3_Group.Controllers
         }
 
         // Check the form and save the new item.
-        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult MarketPlaceCreate(
@@ -479,7 +472,6 @@ namespace Assignment3_Group.Controllers
         }
 
         // Show only the signed-in student's listings.
-        [Authorize]
         [HttpGet]
         public IActionResult MyListings()
         {
@@ -500,7 +492,6 @@ namespace Assignment3_Group.Controllers
         }
 
         // Open the edit form for one of this student's items.
-        [Authorize]
         [HttpGet]
         public IActionResult MarketPlaceEdit(int id)
         {
@@ -527,7 +518,6 @@ namespace Assignment3_Group.Controllers
         }
 
         // Save the edit form.
-        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult MarketPlaceEdit(
@@ -593,7 +583,6 @@ namespace Assignment3_Group.Controllers
         }
 
         // Show the delete confirmation page.
-        [Authorize]
         [HttpGet]
         public IActionResult MarketPlaceDelete(int id)
         {
@@ -615,7 +604,6 @@ namespace Assignment3_Group.Controllers
         }
 
         // Delete only after the student confirms the form.
-        [Authorize]
         [HttpPost, ActionName("MarketPlaceDelete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeletePost(int id)
@@ -650,7 +638,6 @@ namespace Assignment3_Group.Controllers
         }
 
         // Change an item to sold or available.
-        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult ChangeListingStatus(int id, bool isAvailable)
@@ -693,7 +680,6 @@ namespace Assignment3_Group.Controllers
         }
 
         // Show the signed-in student's profile.
-        [Authorize]
         [HttpGet]
         public IActionResult UserDetails()
         {
@@ -712,7 +698,6 @@ namespace Assignment3_Group.Controllers
             Location = ResponseCacheLocation.None,
             NoStore = true)]
 
-        [Authorize]
         public IActionResult Error()
         {
             return View(new ErrorViewModel

@@ -31,12 +31,13 @@
                 <label asp-for="PhoneNumber" class="control-label"></label>
                 <input type="tel" asp-for="PhoneNumber" class="form-control" />
                 <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
             <div class="d-flex flex-wrap gap-2 mt-4">
                 <input type="submit" value="Create" class="btn btn-primary" />
-                    <a asp-action="Index" class="btn btn-outline-secondary">
-                        Back to home
-                    </a>
-             </div>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    Back to home
+                </a>
+            </div>
         </form>
     </div>
 </div>
