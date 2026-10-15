@@ -194,5 +194,108 @@ namespace StudentMarketplaceTestProject
             Assert.IsTrue(context.Users.Any(u => u.UserName == "TestStudent"), "The new user was not saved.");
             Assert.IsInstanceOfType(result, typeof(RedirectToActionResult));
         }
+
+        [TestMethod]
+        public void D_Index_Login()
+        {
+            // Arrange
+            var context = A_GetDbContext();
+            var controller = new HomeController(context);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Session = new Mock<ISession>().Object;
+
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+
+            //create a user so signUp works 
+            var user = new User
+            {
+                UserName = "TestStudent",
+                Password = "TestPassword123",
+                email = "teststudent@example.com",
+                PhoneNumber = "0211234567"
+            };
+
+            // SAVE the user to test database so the loop can find it
+            context.Users.Add(user);
+            context.SaveChanges();
+
+            // 2. Act
+            var result = controller.Login(user);
+
+            // 3. Assert
+            var redirectResult = result as RedirectToActionResult;
+
+            // This Checks that redurectResult isn't null if it is, show the text
+            Assert.IsNotNull(redirectResult, "The action did not return a RedirectToActionResult.");
+
+            // Making sure the controller login worked by checking if we are in marketplace
+            Assert.AreEqual("MarketPlace", redirectResult.ActionName);
+        }
+
+        [TestMethod]
+        public void E_Marketplace()
+        {
+            // Arrange
+            var context = A_GetDbContext();
+            var controller = new HomeController(context);
+
+            // 1. Set up the faked session data
+            var httpContext = new DefaultHttpContext();
+            var sessionMock = new Mock<ISession>();
+
+            // Create the JSON string the controller expects to find in the session
+            string userJson = "{\"UserId\":1,\"UserName\":\"TestStudent\",\"Password\":\"TestPassword123\",\"email\":\"teststudent@example.com\",\"PhoneNumber\":\"0211234567\"}";
+            byte[] sessionValue = System.Text.Encoding.UTF8.GetBytes(userJson);
+
+            // Mock TryGetValue so that when the controller asks for "CurrentUser", it succeeds and returns our user JSON
+            sessionMock
+                .Setup(s => s.TryGetValue("CurrentUser", out sessionValue))
+                .Returns(true);
+
+            httpContext.Session = sessionMock.Object;
+
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+
+            // create a user so database matches
+            var user = new User
+            {
+                UserName = "TestStudent",
+                Password = "TestPassword123",
+                email = "teststudent@example.com",
+                PhoneNumber = "0211234567"
+            };
+
+            context.Users.Add(user);
+            context.SaveChanges();
+
+            // For marketplace parameters
+            string search = null;
+            int categoryId = 0;
+            string sort = null;
+            string status = null;
+
+            // 2. Act
+            var result = controller.MarketPlace(search, categoryId, sort, status);
+
+            // 3. Assert
+            if (result is ViewResult viewResult)
+            {
+                Assert.IsNotNull(viewResult);
+                // You can now check what data is passed to the view, for example:
+                // Assert.IsNotNull(viewResult.Model); 
+            }
+            else
+            {
+                Assert.Fail($"Expected a ViewResult, but got a {result?.GetType().Name ?? "null"}");
+            }
+
+        }
     }
 }
