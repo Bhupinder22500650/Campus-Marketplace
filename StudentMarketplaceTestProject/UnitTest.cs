@@ -154,13 +154,11 @@ namespace StudentMarketplaceTestProject
             // Making sure result is retrun view since that is all index passes
             if (result is ViewResult viewResult)
             {
-                // The result is definitely a ViewResult! Now check the properties.
                 Assert.IsNull(viewResult.Model);
-
             }
             else
             {
-                // Force the test to fail because it wasn't a ViewResult
+                // Force the test to fail because it wasn't ViewResult
                 Assert.Fail($"Expected a ViewResult, but got a {result?.GetType().Name ?? "null"}");
             }
         }
@@ -222,7 +220,7 @@ namespace StudentMarketplaceTestProject
                 PhoneNumber = "0211234567"
             };
 
-            // SAVE the user to test database so the loop can find it
+            // Save the user
             context.Users.Add(user);
             context.SaveChanges();
 
@@ -232,7 +230,7 @@ namespace StudentMarketplaceTestProject
             // 3. Assert
             var redirectResult = result as RedirectToActionResult;
 
-            // This Checks that redurectResult isn't null if it is, show the text
+            //Checks that redurectResult isn't null if it is, show the text
             Assert.IsNotNull(redirectResult, "The action did not return a RedirectToActionResult.");
 
             // Making sure the controller login worked by checking if we are in marketplace
@@ -246,7 +244,7 @@ namespace StudentMarketplaceTestProject
             var context = A_GetDbContext();
             var controller = new HomeController(context);
 
-            // 1. Set up the faked session data
+            //Set up the faked session data
             var httpContext = new DefaultHttpContext();
             var sessionMock = new Mock<ISession>();
 
@@ -254,7 +252,7 @@ namespace StudentMarketplaceTestProject
             string userJson = "{\"UserId\":1,\"UserName\":\"TestStudent\",\"Password\":\"TestPassword123\",\"email\":\"teststudent@example.com\",\"PhoneNumber\":\"0211234567\"}";
             byte[] sessionValue = System.Text.Encoding.UTF8.GetBytes(userJson);
 
-            // Mock TryGetValue so that when the controller asks for "CurrentUser", it succeeds and returns our user JSON
+            // Mock TryGetValue so controller gets "CurrentUser" and succeeds
             sessionMock
                 .Setup(s => s.TryGetValue("CurrentUser", out sessionValue))
                 .Returns(true);
@@ -291,8 +289,6 @@ namespace StudentMarketplaceTestProject
             if (result is ViewResult viewResult)
             {
                 Assert.IsNotNull(viewResult);
-                // You can now check what data is passed to the view, for example:
-                // Assert.IsNotNull(viewResult.Model); 
             }
             else
             {
@@ -309,7 +305,7 @@ namespace StudentMarketplaceTestProject
             var context = A_GetDbContext();
             var controller = new HomeController(context);
 
-            // 1. Set up the faked session data
+            //Set up the faked session data
             var httpContext = new DefaultHttpContext();
             var sessionMock = new Mock<ISession>();
 
@@ -317,7 +313,6 @@ namespace StudentMarketplaceTestProject
             string userJson = "{\"UserId\":1,\"UserName\":\"TestStudent\",\"Password\":\"TestPassword123\",\"email\":\"teststudent@example.com\",\"PhoneNumber\":\"0211234567\"}";
             byte[] sessionValue = System.Text.Encoding.UTF8.GetBytes(userJson);
 
-            // Mock TryGetValue so that when the controller asks for "CurrentUser", it succeeds and returns our user JSON
             sessionMock
                 .Setup(s => s.TryGetValue("CurrentUser", out sessionValue))
                 .Returns(true);
@@ -369,8 +364,6 @@ namespace StudentMarketplaceTestProject
             if (result is ViewResult viewResult)
             {
                 Assert.IsNotNull(viewResult);
-                // You can now check what data is passed to the view, for example:
-                // Assert.IsNotNull(viewResult.Model); 
             }
             else
             {
@@ -385,7 +378,7 @@ namespace StudentMarketplaceTestProject
             var context = A_GetDbContext();
             var controller = new HomeController(context);
 
-            // Set up the logged-in user (UserId = 123)
+            //Set up the faked session data
             var httpContext = new DefaultHttpContext();
             var sessionMock = new Mock<ISession>();
 
@@ -438,8 +431,6 @@ namespace StudentMarketplaceTestProject
             Assert.AreEqual(123, savedListing.SellerId);
         }
 
-
-        // Check the form and save the new item.
         [TestMethod]
         public void H_MarketPlaceCreate()
         {
@@ -447,7 +438,7 @@ namespace StudentMarketplaceTestProject
             var context = A_GetDbContext();
             var controller = new HomeController(context);
 
-            // Set up the signed-in user
+            //Set up the faked session data
             var httpContext = new DefaultHttpContext();
             var sessionMock = new Mock<ISession>();
 
@@ -501,7 +492,6 @@ namespace StudentMarketplaceTestProject
             Assert.AreEqual("MarketPlace", redirectResult.ActionName);
         }
 
-        // Show only the signed-in student's listings.
         [TestMethod]
         public void I_MyListings()
         {
@@ -509,7 +499,7 @@ namespace StudentMarketplaceTestProject
             var context = A_GetDbContext();
             var controller = new HomeController(context);
 
-            // 1. Set up the faked session data
+            //Set up the faked session data
             var httpContext = new DefaultHttpContext();
             var sessionMock = new Mock<ISession>();
 
@@ -517,7 +507,6 @@ namespace StudentMarketplaceTestProject
             string userJson = "{\"UserId\":1,\"UserName\":\"TestStudent\",\"Password\":\"TestPassword123\",\"email\":\"teststudent@example.com\",\"PhoneNumber\":\"0211234567\"}";
             byte[] sessionValue = System.Text.Encoding.UTF8.GetBytes(userJson);
 
-            // Mock TryGetValue so that when the controller asks for "CurrentUser", it succeeds and returns our user JSON
             sessionMock
                 .Setup(s => s.TryGetValue("CurrentUser", out sessionValue))
                 .Returns(true);
@@ -568,9 +557,7 @@ namespace StudentMarketplaceTestProject
             // 3. Assert
             if (result is ViewResult viewResult)
             {
-                Assert.IsNotNull(viewResult);
-                // You can now check what data is passed to the view, for example:
-                // Assert.IsNotNull(viewResult.Model); 
+                Assert.IsNotNull(viewResult); 
             }
             else
             {
@@ -586,7 +573,7 @@ namespace StudentMarketplaceTestProject
             var context = A_GetDbContext();
             var controller = new HomeController(context);
 
-            // Set up the logged-in user (UserId = 123)
+            //Set up the faked session data
             var httpContext = new DefaultHttpContext();
             var sessionMock = new Mock<ISession>();
 
@@ -638,14 +625,13 @@ namespace StudentMarketplaceTestProject
             Assert.AreEqual(123, savedListing.SellerId);
         }
 
-        // Delete only after the student confirms the form.
         [TestMethod]
         public void K_DeletePost()
         {
             var context = A_GetDbContext();
             var controller = new HomeController(context);
 
-            // Set up the signed-in student.
+            //Set up the faked session data
             var httpContext = new DefaultHttpContext();
             var sessionMock = new Mock<ISession>();
 
@@ -695,7 +681,7 @@ namespace StudentMarketplaceTestProject
             var context = A_GetDbContext();
             var controller = new HomeController(context);
 
-            // Set up the signed-in student.
+            //Set up the faked session data
             var httpContext = new DefaultHttpContext();
             var sessionMock = new Mock<ISession>();
 
@@ -716,13 +702,8 @@ namespace StudentMarketplaceTestProject
 
             // Set up TempData.
             var tempDataProvider = new Mock<ITempDataProvider>();
-            tempDataProvider
-                .Setup(p => p.LoadTempData(It.IsAny<HttpContext>()))
-                .Returns(new Dictionary<string, object>());
-            tempDataProvider
-                .Setup(p => p.SaveTempData(
-                    It.IsAny<HttpContext>(),
-                    It.IsAny<IDictionary<string, object>>()));
+            tempDataProvider.Setup(p => p.LoadTempData(It.IsAny<HttpContext>())).Returns(new Dictionary<string, object>());
+            tempDataProvider.Setup(p => p.SaveTempData(It.IsAny<HttpContext>(),It.IsAny<IDictionary<string, object>>()));
 
             controller.TempData = new TempDataDictionary(
                 httpContext, tempDataProvider.Object);
@@ -752,7 +733,7 @@ namespace StudentMarketplaceTestProject
             var context = A_GetDbContext();
             var controller = new HomeController(context);
 
-            // Set up the signed-in student.
+            //Set up the faked session data
             var httpContext = new DefaultHttpContext();
             var sessionMock = new Mock<ISession>();
 

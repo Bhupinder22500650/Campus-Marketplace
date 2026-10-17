@@ -12,7 +12,7 @@ namespace StudentMarketplaceAutomationTests
         // This controls Chrome
         private ChromeDriver driver;
 
-        // This is our website address
+        //Website address
         private string baseUrl = "https://localhost:7228";
 
         // Open Chrome before starting the test
@@ -33,18 +33,18 @@ namespace StudentMarketplaceAutomationTests
             // Add the date and time to make a new username
             string testName = "Auto" + DateTime.Now.ToString("yyyyMMddHHmmssfff");
 
-            // Our test account details
+            //Test account details
             string password = "TestPass123!";
             string email = testName + "@example.com";
             string phone = "0215550101";
 
-            // Our two item names
+            //Two item names
             string bookTitle = testName + " Book";
             string mouseTitle = testName + " Mouse";
 
             Console.WriteLine("Test username: " + testName);
 
-            // 1. CREATE AN ACCOUNT
+            // Creating account
 
             // Open Sign up
             driver.Navigate().GoToUrl(baseUrl + "/Home/SignUp");
@@ -73,7 +73,7 @@ namespace StudentMarketplaceAutomationTests
 
             Console.WriteLine("PASS - account created.");
 
-            // 2. SIGN OUT
+            // User signs out
 
             // Sign-up logs us in, so sign out first
             driver.FindElement(By.Id("userDetails")).Click();
@@ -84,7 +84,7 @@ namespace StudentMarketplaceAutomationTests
             // Open Login
             driver.FindElement(By.LinkText("Login")).Click();
 
-            // 3. LOG IN
+            // User logs in
 
             // Enter the new account details
             driver.FindElement(By.Id("UserName")).SendKeys(testName);
@@ -107,7 +107,7 @@ namespace StudentMarketplaceAutomationTests
 
             Console.WriteLine("PASS - login worked.");
 
-            // 4. CREATE THE BOOK LISTING
+            // Creating book listing
 
             driver.FindElement(By.LinkText("Sell an item")).Click();
 
@@ -152,7 +152,7 @@ namespace StudentMarketplaceAutomationTests
 
             Console.WriteLine("PASS - book listing created.");
 
-            // 5. CREATE THE MOUSE LISTING
+            // Creating mouse listing
 
             driver.FindElement(By.LinkText("Sell an item")).Click();
 
@@ -198,7 +198,7 @@ namespace StudentMarketplaceAutomationTests
 
             Console.WriteLine("PASS - mouse listing created.");
 
-            // 6. SEARCH FOR BOTH ITEMS
+            // Search for items
 
             // Both titles contain our test name
             driver.FindElement(By.Id("search")).SendKeys(testName);
@@ -216,7 +216,7 @@ namespace StudentMarketplaceAutomationTests
 
             Console.WriteLine("PASS - search found both test listings.");
 
-            // 7. SORT FROM LOW PRICE TO HIGH PRICE
+            // Sort low and high
 
             driver.FindElement(
                 By.CssSelector("#sort option[value='priceLow']")).Click();
@@ -244,7 +244,7 @@ namespace StudentMarketplaceAutomationTests
 
             Console.WriteLine("PASS - low to high price order is correct.");
 
-            // 8. SORT FROM HIGH PRICE TO LOW PRICE
+            // Sort from high to low
 
             driver.FindElement(
                 By.CssSelector("#sort option[value='priceHigh']")).Click();
@@ -270,7 +270,7 @@ namespace StudentMarketplaceAutomationTests
 
             Console.WriteLine("PASS - high to low price order is correct.");
 
-            // 9. FILTER BY BOOKS
+            // Filter to category books
 
             driver.FindElement(
                 By.XPath(
@@ -290,7 +290,7 @@ namespace StudentMarketplaceAutomationTests
 
             Console.WriteLine("PASS - Books filter shows only the book.");
 
-            // 10. FILTER BY ELECTRONICS
+            // Filter electronics
 
             driver.FindElement(
                 By.XPath(
@@ -311,7 +311,7 @@ namespace StudentMarketplaceAutomationTests
             Console.WriteLine(
                 "PASS - Electronics filter shows only the mouse.");
 
-            // 11. SEARCH FOR THE BOOK
+            // Search for book
 
             // Choose All categories
             driver.FindElement(
@@ -334,7 +334,7 @@ namespace StudentMarketplaceAutomationTests
 
             Console.WriteLine("PASS - title search shows only the book.");
 
-            // 12. SEARCH FOR A MISSING ITEM
+            // Search for missing item
 
             driver.FindElement(By.Id("search")).Clear();
 
@@ -358,7 +358,7 @@ namespace StudentMarketplaceAutomationTests
 
             Console.WriteLine("PASS - no-match search shows no items.");
 
-            // 13. OPEN MY LISTINGS
+            // Open my listings
 
             driver.FindElement(By.LinkText("My Listings")).Click();
 
@@ -383,7 +383,7 @@ namespace StudentMarketplaceAutomationTests
                 "Available",
                 driver.FindElement(By.XPath(mouseRow + "/td[3]")).Text);
 
-            // 14. MARK THE BOOK AS SOLD
+            // Mark book as sold
 
             // Click the button in the book's row
             driver.FindElement(By.XPath(bookRow + "//button")).Click();
@@ -405,7 +405,7 @@ namespace StudentMarketplaceAutomationTests
 
             Console.WriteLine("PASS - book marked as sold.");
 
-            // 15. MARK THE MOUSE AS SOLD
+            // Mark mouse as sold
 
             driver.FindElement(By.XPath(mouseRow + "//button")).Click();
 
@@ -423,7 +423,7 @@ namespace StudentMarketplaceAutomationTests
 
             Console.WriteLine("PASS - mouse marked as sold.");
 
-            // 16. DELETE THE BOOK
+            // Delete book
 
             driver.FindElement(By.XPath(bookRow))
                 .FindElement(By.LinkText("Delete")).Click();
@@ -484,7 +484,7 @@ namespace StudentMarketplaceAutomationTests
             Console.WriteLine(
                 "PASS - mouse deleted and My Listings is empty.");
 
-            // 18. CHECK THE MARKETPLACE AGAIN
+            // Checking the marketplace
 
             driver.FindElement(By.LinkText("Market Place")).Click();
 
@@ -500,7 +500,7 @@ namespace StudentMarketplaceAutomationTests
                 driver.FindElement(By.CssSelector(".alert-info"))
                 .Text.Contains("No items found"));
 
-            // 19. CHECK THE PROFILE
+            // Checking profile
 
             driver.FindElement(By.Id("userDetails")).Click();
 
@@ -519,7 +519,7 @@ namespace StudentMarketplaceAutomationTests
 
             Console.WriteLine("PASS - profile details are correct.");
 
-            // 20. SIGN OUT
+            // Sign out
 
             driver.FindElement( By.CssSelector("main button[type='submit']")).Click();
 
